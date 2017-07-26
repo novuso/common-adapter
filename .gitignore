@@ -1,0 +1,12 @@
+/.vagrant/
+/.couscous/
+/etc/build/phpunit.xml
+/etc/provision/playbook.retry
+/etc/provision/group_vars/*/parameters.yml
+/composer.phar
+/composer.lock
+/vendor/
+/.idea/
+/nbproject/
+/*.sublime-project
+/*.sublime-workspace
