@@ -18,7 +18,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Novuso\\Common\\Adapter\\": "src/Adapter"
+            "Novuso\\Common\\Adapter\\": "src"
         }
     },
     "config": {
