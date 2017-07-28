@@ -48,7 +48,7 @@ class AuraUrlGenerator implements UrlGeneratorInterface
     public function generate(string $name, array $parameters = [], array $query = [], bool $absolute = false): string
     {
         try {
-            $url = $this->urlGenerator->generateRaw($name, $parameters);
+            $url = $this->urlGenerator->generate($name, $parameters);
 
             if (!empty($query)) {
                 $url .= '?'.http_build_query($query);
