@@ -4,6 +4,7 @@ namespace Novuso\Common\Adapter\EventStore\Doctrine;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Statement;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\DBAL\Schema\Schema;
 use Novuso\Common\Application\EventStore\EventStoreInterface;
 use Novuso\Common\Application\EventStore\Exception\ConcurrencyException;
@@ -109,8 +110,14 @@ class DatabaseEventStore implements EventStoreInterface
             $this->logger->log((string) $query, $parameters);
 
             $query->execute();
-        } catch (ConcurrencyException $e) {
-            throw $e;
+        } catch (UniqueConstraintViolationException $e) {
+            $message = sprintf(
+                'Version %d already exists for [%s]{%s}',
+                $eventRecord->sequenceNumber(),
+                $eventRecord->aggregateType()->toString(),
+                $eventRecord->aggregateId()->toString()
+            );
+            throw new ConcurrencyException($message, $e->getCode(), $e);
         } catch (Throwable $e) {
             throw new EventStoreException($e->getMessage(), $e->getCode(), $e);
         }
@@ -309,7 +316,7 @@ class DatabaseEventStore implements EventStoreInterface
             'notnull'  => true
         ]);
         $table->setPrimaryKey(['id']);
-        $table->addIndex(['type', 'uuid', 'version']);
+        $table->addUniqueIndex(['type', 'uuid', 'version']);
 
         return $schema;
     }
