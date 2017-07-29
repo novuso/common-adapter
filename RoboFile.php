@@ -53,21 +53,6 @@ class RoboFile extends Tasks
     }
 
     /**
-     * Runs the build process for continuous integration
-     *
-     * @return void
-     */
-    public function integration()
-    {
-        $this->yell('Starting continuous integration build');
-        $this->dirRemove();
-        $this->dirPrepare();
-        $this->phpLint();
-        $this->phpCodeStyle();
-        $this->yell('Build complete');
-    }
-
-    /**
      * Installs project dependencies
      *
      * @option $prod Optimize for production
