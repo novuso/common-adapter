@@ -160,7 +160,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
 
             $this->logProcessStarted($symfonyProcess);
         } catch (Throwable $e) {
-            if ($errorBehavior->value() !== ProcessErrorBehavior::IGNORE) {
+            if ($errorBehavior->value() === ProcessErrorBehavior::EXCEPTION) {
                 throw new ProcessException($e->getMessage(), $e->getCode(), $e);
             }
         }
