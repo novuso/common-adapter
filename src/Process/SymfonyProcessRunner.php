@@ -59,6 +59,13 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
     private $processes;
 
     /**
+     * Number of times to retry
+     *
+     * @var int
+     */
+    private $retries;
+
+    /**
      * Constructs SymfonyProcessRunner
      *
      * @param LoggerInterface $logger        The logger service
@@ -66,10 +73,13 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
      *                                       for no limit
      * @param int             $delay         The number of microseconds to
      *                                       delay between process checks
+     * @param int $retries                   The number of times to retry a
+     *                                       failed process when error behavior
+     *                                       is set to retry
      *
      * @throws DomainException When delay is not a natural number
      */
-    public function __construct(LoggerInterface $logger, int $maxConcurrent = 1, int $delay = 1000)
+    public function __construct(LoggerInterface $logger, int $maxConcurrent = 1, int $delay = 1000, int $retries = 3)
     {
         if ($delay < 1) {
             $message = sprintf('%s expects delay to be a natural number', __METHOD__);
@@ -81,6 +91,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
         $this->delay = $delay;
         $this->queue = LinkedQueue::of(Process::class);
         $this->processes = [];
+        $this->retries = $retries;
     }
 
     /**
@@ -200,7 +211,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
                         $original = $processData['original'];
                         $iteration = $processData['iteration'];
 
-                        if ($iteration > 3) {
+                        if ($iteration > $this->retries) {
                             throw new ProcessFailedException($process);
                         }
 
