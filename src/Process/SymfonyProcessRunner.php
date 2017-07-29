@@ -337,7 +337,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
             $process->getCommandLine(),
             $process->getWorkingDirectory()
         );
-        $this->logger->warning($message);
+        $this->logger->info($message);
     }
 
     /**
