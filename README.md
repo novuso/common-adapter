@@ -15,5 +15,4 @@ TODO:
 * Additional message queues
   * RedisMessageQueue
   * AmazonSqsMessageQueue
-  * DbalMessageQueue
 * Lazy loaded commands
