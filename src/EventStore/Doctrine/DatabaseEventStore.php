@@ -79,8 +79,6 @@ class DatabaseEventStore implements EventStoreInterface
      */
     public function append(EventRecord $eventRecord): void
     {
-        $this->createStore();
-
         try {
             $uuid = $eventRecord->aggregateId()->toString();
             $type = $eventRecord->aggregateType()->toString();
@@ -135,8 +133,6 @@ class DatabaseEventStore implements EventStoreInterface
      */
     public function readStream(Type $type, IdentifierInterface $id, ?int $first = null, ?int $last = null)
     {
-        $this->createStore();
-
         $typeString = $type->toString();
         $idString = $id->toString();
 
@@ -161,8 +157,6 @@ class DatabaseEventStore implements EventStoreInterface
      */
     public function hasStream(Type $type, IdentifierInterface $id): bool
     {
-        $this->createStore();
-
         try {
             $query = $this->connection->createQueryBuilder();
             $query
@@ -191,6 +185,26 @@ class DatabaseEventStore implements EventStoreInterface
             return false;
         } catch (Throwable $e) {
             throw new EventStoreException($e->getMessage(), $e->getCode(), $e);
+        }
+    }
+
+    /**
+     * Creates event store table if needed
+     *
+     * @return void
+     */
+    public function createSchema(): void
+    {
+        if ($this->tableExists()) {
+            return;
+        }
+
+        $schema = $this->getCreateSchema();
+        $queries = $schema->toSql($this->connection->getDatabasePlatform());
+
+        foreach ($queries as $query) {
+            $this->logger->log($query);
+            $this->connection->exec($query);
         }
     }
 
@@ -244,26 +258,6 @@ class DatabaseEventStore implements EventStoreInterface
         $this->logger->log((string) $query, $parameters);
 
         return $query->execute();
-    }
-
-    /**
-     * Creates event store if needed
-     *
-     * @return void
-     */
-    protected function createStore(): void
-    {
-        if ($this->tableExists()) {
-            return;
-        }
-
-        $schema = $this->getCreateSchema();
-        $queries = $schema->toSql($this->connection->getDatabasePlatform());
-
-        foreach ($queries as $query) {
-            $this->logger->log($query);
-            $this->connection->exec($query);
-        }
     }
 
     /**

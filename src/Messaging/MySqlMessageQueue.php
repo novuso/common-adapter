@@ -81,8 +81,6 @@ class MySqlMessageQueue implements MessageQueueInterface
      */
     public function enqueue(string $topic, MessageInterface $message): void
     {
-        $this->createQueue();
-
         $timestamp = time();
         $messageText = $this->serializer->serialize($message);
 
@@ -115,8 +113,6 @@ class MySqlMessageQueue implements MessageQueueInterface
      */
     public function dequeue(string $topic): ?MessageInterface
     {
-        $this->createQueue();
-
         $timestamp = time();
         $handle = Uuid::comb()->hashValue();
 
@@ -185,8 +181,6 @@ class MySqlMessageQueue implements MessageQueueInterface
      */
     public function ack(string $topic, MessageInterface $message): void
     {
-        $this->createQueue();
-
         $handle = $message->metaData()->get(static::META_KEY);
 
         $query = $this->connection->createQueryBuilder();
@@ -222,8 +216,6 @@ class MySqlMessageQueue implements MessageQueueInterface
      */
     public function recycleMessages(string $topic, int $delay = 600): void
     {
-        $this->createQueue();
-
         $timestamp = time();
 
         $query = $this->connection->createQueryBuilder();
@@ -271,11 +263,11 @@ class MySqlMessageQueue implements MessageQueueInterface
     }
 
     /**
-     * Creates queue if needed
+     * Creates queue table if needed
      *
      * @return void
      */
-    protected function createQueue(): void
+    public function createSchema(): void
     {
         if ($this->tableExists()) {
             return;
