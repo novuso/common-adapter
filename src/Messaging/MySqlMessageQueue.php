@@ -70,6 +70,7 @@ class MySqlMessageQueue implements MessageQueueInterface
         $this->createQueue();
 
         $timestamp = time();
+        $messageText = $this->serializer->serialize($message);
 
         $query = $this->connection->createQueryBuilder();
         $query
@@ -81,7 +82,7 @@ class MySqlMessageQueue implements MessageQueueInterface
             ]);
 
         $query->setParameter(':topic', $topic, 'string');
-        $query->setParameter(':message', $this->serializer->serialize($message), 'string');
+        $query->setParameter(':message', $messageText, 'string');
         $query->setParameter(':timestamp', $timestamp, 'integer');
 
         $query->execute();
@@ -94,8 +95,8 @@ class MySqlMessageQueue implements MessageQueueInterface
     {
         $this->createQueue();
 
-        $handle = Uuid::comb()->hashValue();
         $timestamp = time();
+        $handle = Uuid::comb()->hashValue();
 
         // update with limit is not portable;
         // using MySQL syntax instead of builder
@@ -173,7 +174,7 @@ class MySqlMessageQueue implements MessageQueueInterface
     {
         $this->createQueue();
 
-        $time = time();
+        $timestamp = time();
 
         $query = $this->connection->createQueryBuilder();
         $query
@@ -189,8 +190,8 @@ class MySqlMessageQueue implements MessageQueueInterface
 
         $marked = [];
         foreach ($statement as $record) {
-            $timestamp = (int) $record['timestamp'];
-            $elapsed = $time - $timestamp;
+            $lastUpdated = (int) $record['timestamp'];
+            $elapsed = $timestamp - $lastUpdated;
             if ($elapsed > $delay) {
                 /** @var MessageInterface $message */
                 $message = $this->serializer->deserialize($record['message']);
