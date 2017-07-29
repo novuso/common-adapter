@@ -189,7 +189,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
                     continue;
                 }
 
-                // remove from current process before
+                // remove current process before
                 // checking for success
                 unset($this->processes[$pid]);
 
