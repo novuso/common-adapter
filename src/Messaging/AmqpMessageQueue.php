@@ -12,6 +12,7 @@ use PhpAmqpLib\Message\AMQPMessage;
 /**
  * AmqpMessageQueue is an AMQP message queue
  *
+ * @link      https://github.com/php-amqplib/php-amqplib AMQP Lib
  * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
  * @license   http://opensource.org/licenses/MIT The MIT License
  * @author    John Nickell <email@johnnickell.com>
