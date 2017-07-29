@@ -4,6 +4,7 @@ namespace Novuso\Common\Adapter\Messaging;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Schema;
+use Novuso\Common\Application\Logging\SqlLogger;
 use Novuso\Common\Application\Messaging\MessageQueueInterface;
 use Novuso\Common\Domain\Messaging\MessageInterface;
 use Novuso\Common\Domain\Value\Identifier\Uuid;
@@ -42,6 +43,13 @@ class MySqlMessageQueue implements MessageQueueInterface
     protected $serializer;
 
     /**
+     * The SQL logger
+     *
+     * @var SqlLogger
+     */
+    protected $logger;
+
+    /**
      * Table name
      *
      * @var string
@@ -53,12 +61,18 @@ class MySqlMessageQueue implements MessageQueueInterface
      *
      * @param Connection          $connection The Doctrine DBAL connection
      * @param SerializerInterface $serializer The serializer service
+     * @param SqlLogger           $logger     The SQL logger service
      * @param string              $table      The table name
      */
-    public function __construct(Connection $connection, SerializerInterface $serializer, string $table)
-    {
+    public function __construct(
+        Connection $connection,
+        SerializerInterface $serializer,
+        SqlLogger $logger,
+        string $table
+    ) {
         $this->connection = $connection;
         $this->serializer = $serializer;
+        $this->logger = $logger;
         $this->table = $table;
     }
 
@@ -81,9 +95,17 @@ class MySqlMessageQueue implements MessageQueueInterface
                 'timestamp' => ':timestamp'
             ]);
 
-        $query->setParameter(':topic', $topic, 'string');
-        $query->setParameter(':message', $messageText, 'string');
-        $query->setParameter(':timestamp', $timestamp, 'integer');
+        $parameters = [
+            ':topic'     => ['value' => $topic, 'type' => 'string'],
+            ':message'   => ['value' => $messageText, 'type' => 'string'],
+            ':timestamp' => ['value' => $timestamp, 'type' => 'integer']
+        ];
+
+        foreach ($parameters as $key => $data) {
+            $query->setParameter($key, $data['value'], $data['type']);
+        }
+
+        $this->logger->log((string) $query, $parameters);
 
         $query->execute();
     }
@@ -107,17 +129,28 @@ class MySqlMessageQueue implements MessageQueueInterface
         $update[] = 'WHERE topic = :topic';
         $update[] = 'AND handle IS NULL';
         $update[] = 'LIMIT 1';
-        $update = implode(' ', $update);
+        $sql = implode(' ', $update);
 
-        $statement = $this->connection->prepare($update);
-        $statement->bindValue('handle', $handle, 'string');
-        $statement->bindValue('timestamp', $timestamp, 'integer');
-        $statement->bindValue('topic', $topic, 'string');
+        $statement = $this->connection->prepare($sql);
+
+        $parameters = [
+            'handle'    => ['value' => $handle, 'type' => 'string'],
+            'timestamp' => ['value' => $timestamp, 'type' => 'integer'],
+            'topic'     => ['value' => $topic, 'type' => 'string']
+        ];
+
+        foreach ($parameters as $key => $data) {
+            $statement->bindValue($key, $data['value'], $data['type']);
+        }
+
         $statement->execute();
 
         if ($statement->rowCount() === 0) {
             return null;
         }
+
+        // only log update SQL when a message is available
+        $this->logger->log($sql, $parameters);
 
         $query = $this->connection->createQueryBuilder();
         $query
@@ -125,7 +158,15 @@ class MySqlMessageQueue implements MessageQueueInterface
             ->from($this->table)
             ->where('handle = :handle');
 
-        $query->setParameter(':handle', $handle, 'string');
+        $parameters = [
+            ':handle' => ['value' => $handle, 'type' => 'string']
+        ];
+
+        foreach ($parameters as $key => $data) {
+            $query->setParameter($key, $data['value'], $data['type']);
+        }
+
+        $this->logger->log((string) $query, $parameters);
 
         $statement = $query->execute();
         $statement->setFetchMode(PDO::FETCH_ASSOC);
@@ -154,7 +195,16 @@ class MySqlMessageQueue implements MessageQueueInterface
             ->where('handle = :handle')
             ->setMaxResults(1);
 
-        $query->setParameter(':handle', $handle, 'string');
+        $parameters = [
+            ':handle' => ['value' => $handle, 'type' => 'string']
+        ];
+
+        foreach ($parameters as $key => $data) {
+            $query->setParameter($key, $data['value'], $data['type']);
+        }
+
+        $this->logger->log((string) $query, $parameters);
+
         $query->execute();
     }
 
@@ -183,7 +233,15 @@ class MySqlMessageQueue implements MessageQueueInterface
             ->where('topic = :topic')
             ->andWhere('handle IS NOT NULL');
 
-        $query->setParameter(':topic', $topic, 'string');
+        $parameters = [
+            ':topic' => ['value' => $topic, 'type' => 'string']
+        ];
+
+        foreach ($parameters as $key => $data) {
+            $query->setParameter($key, $data['value'], $data['type']);
+        }
+
+        $this->logger->log((string) $query, $parameters);
 
         $statement = $query->execute();
         $statement->setFetchMode(PDO::FETCH_ASSOC);
@@ -205,6 +263,9 @@ class MySqlMessageQueue implements MessageQueueInterface
             $query
                 ->delete($this->table)
                 ->where(sprintf('id IN (%s)', implode(',', $marked)));
+
+            $this->logger->log((string) $query);
+
             $query->execute();
         }
     }
@@ -224,6 +285,7 @@ class MySqlMessageQueue implements MessageQueueInterface
         $queries = $schema->toSql($this->connection->getDatabasePlatform());
 
         foreach ($queries as $query) {
+            $this->logger->log($query);
             $this->connection->exec($query);
         }
     }

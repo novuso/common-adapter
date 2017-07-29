@@ -316,7 +316,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
     private function logProcessStarted(SymfonyProcess $process): void
     {
         $message = sprintf(
-            'Process "%s" started; Working directory: %s',
+            '[PROCESS]: "%s" started; Working directory: %s',
             $process->getCommandLine(),
             $process->getWorkingDirectory()
         );
@@ -333,7 +333,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
     private function logProcessRestarted(SymfonyProcess $process): void
     {
         $message = sprintf(
-            'Process "%s" restarted; Working directory: %s',
+            '[PROCESS]: "%s" restarted; Working directory: %s',
             $process->getCommandLine(),
             $process->getWorkingDirectory()
         );
@@ -350,7 +350,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
     private function logProcessFailed(SymfonyProcess $process): void
     {
         $message = sprintf(
-            'Process "%s" failed; Exit code: %s(%s); Working directory: %s',
+            '[PROCESS]: "%s" failed; Exit code: %s(%s); Working directory: %s',
             $process->getCommandLine(),
             $process->getExitCode(),
             $process->getExitCodeText(),
