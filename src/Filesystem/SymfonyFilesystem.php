@@ -30,9 +30,9 @@ class SymfonyFilesystem implements FilesystemInterface
      *
      * @param Filesystem $filesystem The Symfony filesystem
      */
-    public function __construct(Filesystem $filesystem)
+    public function __construct(?Filesystem $filesystem = null)
     {
-        $this->filesystem = $filesystem;
+        $this->filesystem = $filesystem ?: new Filesystem();
     }
 
     /**
