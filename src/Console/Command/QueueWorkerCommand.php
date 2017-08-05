@@ -22,6 +22,13 @@ use Symfony\Component\Console\Input\InputOption;
 class QueueWorkerCommand extends Command
 {
     /**
+     * User defined exit code for shutdown
+     *
+     * @var int
+     */
+    public const DEFAULT_SHUTDOWN_EXIT_CODE = 65;
+
+    /**
      * Command name
      *
      * @var string
@@ -57,6 +64,13 @@ class QueueWorkerCommand extends Command
     protected $messageQueue;
 
     /**
+     * Path to shut down file
+     *
+     * @var string
+     */
+    protected $shutDownFilePath;
+
+    /**
      * Fetch delay
      *
      * @var int
@@ -66,21 +80,24 @@ class QueueWorkerCommand extends Command
     /**
      * Constructs QueueWorkerCommand
      *
-     * @param CommandBusInterface      $commandBus      The command bus
-     * @param EventDispatcherInterface $eventDispatcher The event dispatcher
-     * @param MessageQueueInterface    $messageQueue    The message queue
-     * @param int                      $delay           The microseconds to
-     *                                                  delay between fetches
+     * @param CommandBusInterface      $commandBus       The command bus
+     * @param EventDispatcherInterface $eventDispatcher  The event dispatcher
+     * @param MessageQueueInterface    $messageQueue     The message queue
+     * @param string                   $shutDownFilePath Path to shut down file
+     * @param int                      $delay            The microseconds to
+     *                                                   delay between fetches
      */
     public function __construct(
         CommandBusInterface $commandBus,
         EventDispatcherInterface $eventDispatcher,
         MessageQueueInterface $messageQueue,
+        string $shutDownFilePath,
         int $delay = 100000
     ) {
         $this->commandBus = $commandBus;
         $this->eventDispatcher = $eventDispatcher;
         $this->messageQueue = $messageQueue;
+        $this->shutDownFilePath = $shutDownFilePath;
         $this->delay = $delay;
         parent::__construct();
     }
@@ -117,8 +134,22 @@ class QueueWorkerCommand extends Command
             $this->messageQueue->ack($topic, $message);
 
             if (!$persist) {
-                return 0;
+                return $this->getExitCode();
             }
+        }
+
+        return $this->getExitCode();
+    }
+
+    /**
+     * Determines the correct exit code
+     *
+     * @return int
+     */
+    protected function getExitCode(): int
+    {
+        if (file_exists($this->shutDownFilePath)) {
+            return (int) $this->option('shutdown-exit');
         }
 
         return 0;
@@ -144,7 +175,14 @@ class QueueWorkerCommand extends Command
     protected function getOptions(): array
     {
         return [
-            ['persist', 'p', InputOption::VALUE_NONE, 'Worker should not exit after each message']
+            ['persist', 'p', InputOption::VALUE_NONE, 'Worker should not exit after each message'],
+            [
+                'shutdown-exit',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Exit code to signal process should not restart',
+                self::DEFAULT_SHUTDOWN_EXIT_CODE
+            ]
         ];
     }
 }
