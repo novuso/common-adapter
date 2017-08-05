@@ -91,7 +91,7 @@ class JsonConfigEnvLoader implements ConfigLoaderInterface
 
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
-            $name = $this->filesystem->baseName($file->getRealPath(), '.yml');
+            $name = $this->filesystem->baseName($file->getRealPath(), '.json');
             $data = json_decode($this->filesystem->get($file->getRealPath()), true);
             if (!is_array($data)) {
                 $message = sprintf(
