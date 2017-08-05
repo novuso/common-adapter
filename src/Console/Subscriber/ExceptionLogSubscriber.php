@@ -50,7 +50,7 @@ class ExceptionLogSubscriber implements EventSubscriberInterface
      *
      * @return void
      */
-    public function onConsoleException(ConsoleErrorEvent $event)
+    public function onConsoleError(ConsoleErrorEvent $event)
     {
         $exception = $event->getError();
         $exitCode = $event->getExitCode();
