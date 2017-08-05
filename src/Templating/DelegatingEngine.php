@@ -14,7 +14,7 @@ use Novuso\Common\Application\Templating\TemplateHelperInterface;
  * @license   http://opensource.org/licenses/MIT The MIT License
  * @author    John Nickell <email@johnnickell.com>
  */
-class DelegatingEngine
+class DelegatingEngine implements TemplateEngineInterface
 {
     /**
      * Template engines
