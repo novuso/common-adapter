@@ -3,7 +3,7 @@
 namespace Novuso\Common\Adapter\EventStore\InMemory;
 
 use Countable;
-use Novuso\Common\Domain\EventSourcing\EventRecord;
+use Novuso\Common\Domain\Model\EventRecord;
 use Novuso\System\Utility\Validate;
 
 /**

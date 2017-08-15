@@ -6,8 +6,8 @@ use ArrayIterator;
 use Novuso\Common\Application\EventStore\EventStoreInterface;
 use Novuso\Common\Application\EventStore\Exception\ConcurrencyException;
 use Novuso\Common\Application\EventStore\Exception\StreamNotFoundException;
-use Novuso\Common\Domain\EventSourcing\EventRecord;
 use Novuso\Common\Domain\Identity\IdentifierInterface;
+use Novuso\Common\Domain\Model\EventRecord;
 use Novuso\System\Type\Type;
 use Novuso\System\Utility\Validate;
 
