@@ -4,7 +4,7 @@
     "license": "MIT",
     "require": {
         "php": ">=7.1",
-        "novuso/common": "0.7.*"
+        "novuso/common": "dev-develop"
     },
     "require-dev": {
         "aura/di": "3.*",
