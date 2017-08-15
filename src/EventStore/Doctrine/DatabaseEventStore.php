@@ -295,7 +295,7 @@ class DatabaseEventStore implements EventStoreInterface
 
         $table = $schema->createTable($this->table);
 
-        $table->addColumn('id', 'integer', [
+        $table->addColumn('id', 'bigint', [
             'autoincrement' => true,
             'unsigned'      => true,
             'notnull'       => true
