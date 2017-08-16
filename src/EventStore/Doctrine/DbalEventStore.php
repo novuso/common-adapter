@@ -19,13 +19,13 @@ use Novuso\System\Utility\Validate;
 use Throwable;
 
 /**
- * DatabaseEventStore is a DBAL implementation of an event store
+ * DbalEventStore is a DBAL implementation of an event store
  *
  * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
  * @license   http://opensource.org/licenses/MIT The MIT License
  * @author    John Nickell <email@johnnickell.com>
  */
-class DatabaseEventStore implements EventStoreInterface
+class DbalEventStore implements EventStoreInterface
 {
     /**
      * Database connection
@@ -56,7 +56,7 @@ class DatabaseEventStore implements EventStoreInterface
     protected $table;
 
     /**
-     * Constructs DatabaseEventStore
+     * Constructs DbalEventStore
      *
      * @param Connection          $connection The database connection
      * @param SerializerInterface $serializer The serializer service

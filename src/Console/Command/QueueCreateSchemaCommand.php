@@ -6,20 +6,20 @@ use Novuso\Common\Adapter\Console\Command;
 use Novuso\Common\Adapter\Messaging\MySqlMessageQueue;
 
 /**
- * SchemaMessageQueueCommand is command that creates a schema for message queue
+ * QueueCreateSchemaCommand is command that creates a schema for message queue
  *
  * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
  * @license   http://opensource.org/licenses/MIT The MIT License
  * @author    John Nickell <email@johnnickell.com>
  */
-class SchemaMessageQueueCommand extends Command
+class QueueCreateSchemaCommand extends Command
 {
     /**
      * Command name
      *
      * @var string
      */
-    protected $name = 'schema:message-queue';
+    protected $name = 'queue:schema:create';
 
     /**
      * Command description
@@ -36,7 +36,7 @@ class SchemaMessageQueueCommand extends Command
     protected $mySqlMessageQueue;
 
     /**
-     * SchemaMessageQueueCommand constructor.
+     * Constructs QueueCreateSchemaCommand
      *
      * @param MySqlMessageQueue $mySqlMessageQueue
      */

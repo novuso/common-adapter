@@ -3,23 +3,23 @@
 namespace Novuso\Common\Adapter\Console\Command;
 
 use Novuso\Common\Adapter\Console\Command;
-use Novuso\Common\Adapter\EventStore\Doctrine\DatabaseEventStore;
+use Novuso\Common\Adapter\EventStore\Doctrine\DbalEventStore;
 
 /**
- * SchemaEventStoreCommand is command that creates a schema for event store
+ * EventStoreCreateSchemaCommand is command that creates a schema for event store
  *
  * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
  * @license   http://opensource.org/licenses/MIT The MIT License
  * @author    John Nickell <email@johnnickell.com>
  */
-class SchemaEventStoreCommand extends Command
+class EventStoreCreateSchemaCommand extends Command
 {
     /**
      * Command name
      *
      * @var string
      */
-    protected $name = 'schema:event-store';
+    protected $name = 'event-store:schema:create';
 
     /**
      * Command description
@@ -31,16 +31,16 @@ class SchemaEventStoreCommand extends Command
     /**
      * Database event store
      *
-     * @var DatabaseEventStore
+     * @var DbalEventStore
      */
     protected $databaseEventStore;
 
     /**
-     * SchemaMessageQueueCommand constructor.
+     * Constructs EventStoreCreateSchemaCommand
      *
-     * @param DatabaseEventStore $databaseEventStore
+     * @param DbalEventStore $databaseEventStore
      */
-    public function __construct(DatabaseEventStore $databaseEventStore)
+    public function __construct(DbalEventStore $databaseEventStore)
     {
         $this->databaseEventStore = $databaseEventStore;
         parent::__construct();
@@ -54,7 +54,7 @@ class SchemaEventStoreCommand extends Command
     protected function fire(): int
     {
         $this->databaseEventStore->createSchema();
-        $this->success('Schema created for DatabaseEventStore');
+        $this->success('Schema created for DbalEventStore');
 
         return 0;
     }
