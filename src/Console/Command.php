@@ -2,7 +2,6 @@
 
 namespace Novuso\Common\Adapter\Console;
 
-use Novuso\System\Collection\ArrayCollection;
 use Novuso\System\Exception\RuntimeException;
 use Symfony\Component\Console\Command\Command as BaseCommand;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
