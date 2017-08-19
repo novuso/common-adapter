@@ -50,7 +50,7 @@ class TwigEngine implements TemplateEngineInterface
         try {
             return $this->environment->render($template, $data);
         } catch (Throwable $e) {
-            throw new TemplatingException($e->getMessage(), $template, $e);
+            throw new TemplatingException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
