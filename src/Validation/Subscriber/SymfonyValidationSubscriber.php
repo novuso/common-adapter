@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Novuso\Common\Adapter\Validation\Symfony;
+namespace Novuso\Common\Adapter\Validation\Subscriber;
 
 use Exception;
 use Novuso\Common\Application\Attribute\Validation;

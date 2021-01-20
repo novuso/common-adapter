@@ -8,6 +8,7 @@
         "ext-intl": "*",
         "ext-json": "*",
         "ext-pcntl": "*",
+        "ext-posix": "*",
         "ext-sockets": "*",
         "novuso/common": "^2.1",
         "psr/cache": "^1.0"
@@ -112,6 +113,7 @@
             "ext-intl": "8.0.0",
             "ext-json": "8.0.0",
             "ext-pcntl": "8.0.0",
+            "ext-posix": "8.0.0",
             "ext-sockets": "8.0.0"
         },
         "preferred-install": {

@@ -20,6 +20,7 @@ RUN apt-get update \
     && docker-php-ext-install zip \
     && docker-php-ext-install bcmath \
     && docker-php-ext-install sockets \
+    && docker-php-ext-install posix \
     && pecl install xdebug \
     && docker-php-ext-enable xdebug \
     && apt-get -y autoremove \
