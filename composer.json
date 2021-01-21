@@ -3,11 +3,12 @@
     "description": "Novuso Common Adapter Library",
     "license": "MIT",
     "require": {
-        "php": ">=7.3",
+        "php": ">=8.0",
         "ext-bcmath": "*",
         "ext-intl": "*",
         "ext-json": "*",
         "ext-pcntl": "*",
+        "ext-pdo": "*",
         "ext-posix": "*",
         "ext-sockets": "*",
         "novuso/common": "^2.1",
@@ -115,6 +116,7 @@
             "ext-intl": "8.0.0",
             "ext-json": "8.0.0",
             "ext-pcntl": "8.0.0",
+            "ext-pdo": "8.0.0",
             "ext-posix": "8.0.0",
             "ext-sockets": "8.0.0"
         },

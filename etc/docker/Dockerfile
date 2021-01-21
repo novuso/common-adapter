@@ -15,6 +15,8 @@ RUN apt-get update \
     && docker-php-ext-configure intl \
     && docker-php-ext-install intl \
     && docker-php-ext-install pcntl \
+    && docker-php-ext-install pdo \
+    && docker-php-ext-install pdo_mysql \
     && docker-php-ext-install phar \
     && docker-php-ext-install simplexml \
     && docker-php-ext-install zip \
