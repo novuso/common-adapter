@@ -12,8 +12,6 @@ use Novuso\System\Collection\HashSet;
 
 /**
  * Class GoogleCloudFileStorage
- *
- * @codeCoverageIgnore Stream wrapper dictates use of native PHP filesystem functions
  */
 final class GoogleCloudFileStorage implements FileStorage
 {

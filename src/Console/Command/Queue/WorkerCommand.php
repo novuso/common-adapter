@@ -21,8 +21,6 @@ use Throwable;
 
 /**
  * Class WorkerCommand
- *
- * @codeCoverageIgnore
  */
 final class WorkerCommand extends Command
 {

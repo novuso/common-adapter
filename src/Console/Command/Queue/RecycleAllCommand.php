@@ -12,8 +12,6 @@ use Throwable;
 
 /**
  * Class RecycleAllCommand
- *
- * @codeCoverageIgnore
  */
 final class RecycleAllCommand extends Command
 {

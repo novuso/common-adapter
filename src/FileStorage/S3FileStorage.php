@@ -14,8 +14,6 @@ use function Aws\recursive_dir_iterator;
 
 /**
  * Class S3FileStorage
- *
- * @codeCoverageIgnore Stream wrapper dictates use of native PHP filesystem functions
  */
 final class S3FileStorage implements FileStorage
 {

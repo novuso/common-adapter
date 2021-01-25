@@ -11,8 +11,6 @@ use Throwable;
 
 /**
  * Class MessageStoreSchemaCommand
- *
- * @codeCoverageIgnore
  */
 final class MessageStoreSchemaCommand extends Command
 {

@@ -13,8 +13,6 @@ use Throwable;
 
 /**
  * Class RecycleCommand
- *
- * @codeCoverageIgnore
  */
 final class RecycleCommand extends Command
 {
