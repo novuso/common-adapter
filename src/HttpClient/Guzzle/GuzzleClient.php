@@ -1,59 +1,63 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Novuso\Common\Adapter\HttpClient\Guzzle;
 
 use GuzzleHttp\ClientInterface;
-use Novuso\Common\Application\HttpClient\HttpClientInterface;
-use Novuso\Common\Application\HttpClient\Message\PromiseInterface;
+use Novuso\Common\Application\HttpClient\Exception\Exception;
+use Novuso\Common\Application\HttpClient\Exception\TransferException;
+use Novuso\Common\Application\HttpClient\Message\Promise;
+use Novuso\Common\Application\HttpClient\Transport\HttpClient;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * GuzzleClient is a Guzzle HTTP client adapter
- *
- * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
- * @license   http://opensource.org/licenses/MIT The MIT License
- * @author    John Nickell <email@johnnickell.com>
+ * Class GuzzleClient
  */
-class GuzzleClient implements HttpClientInterface
+final class GuzzleClient implements HttpClient
 {
     /**
-     * Guzzle client
-     *
-     * @var ClientInterface
-     */
-    protected $client;
-
-    /**
      * Constructs GuzzleClient
-     *
-     * @param ClientInterface $client The Guzzle client
      */
-    public function __construct(ClientInterface $client)
+    public function __construct(protected ClientInterface $client)
     {
-        $this->client = $client;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function send(RequestInterface $request, array $options = []): ResponseInterface
-    {
+    public function send(
+        RequestInterface $request,
+        array $options = []
+    ): ResponseInterface {
         $promise = $this->sendAsync($request, $options);
         $promise->wait();
 
-        if ($promise->getState() === PromiseInterface::REJECTED) {
-            throw $promise->getException();
+        if ($promise->getState() === Promise::REJECTED) {
+            $exception = $promise->getException();
+
+            if (!($exception instanceof Exception)) {
+                throw new TransferException(
+                    $exception->getMessage(),
+                    $exception->getCode(),
+                    $exception
+                );
+            }
+
+            throw $exception;
         }
 
         return $promise->getResponse();
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function sendAsync(RequestInterface $request, array $options = []): PromiseInterface
-    {
+    public function sendAsync(
+        RequestInterface $request,
+        array $options = []
+    ): Promise {
         $promise = $this->client->sendAsync($request, $options);
 
         return new GuzzlePromise($promise, $request);

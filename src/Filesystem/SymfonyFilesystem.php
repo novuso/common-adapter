@@ -1,34 +1,25 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Novuso\Common\Adapter\Filesystem;
 
 use Novuso\Common\Application\Filesystem\Exception\FileNotFoundException;
 use Novuso\Common\Application\Filesystem\Exception\FilesystemException;
-use Novuso\Common\Application\Filesystem\FilesystemInterface;
+use Novuso\Common\Application\Filesystem\Filesystem as FilesystemInterface;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Throwable;
 
 /**
- * SymfonyFilesystem is a Symfony filesystem adapter
- *
- * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
- * @license   http://opensource.org/licenses/MIT The MIT License
- * @author    John Nickell <email@johnnickell.com>
+ * Class SymfonyFilesystem
  */
-class SymfonyFilesystem implements FilesystemInterface
+final class SymfonyFilesystem implements FilesystemInterface
 {
-    /**
-     * Filesystem
-     *
-     * @var Filesystem
-     */
-    protected $filesystem;
+    protected Filesystem $filesystem;
 
     /**
      * Constructs SymfonyFilesystem
-     *
-     * @param Filesystem $filesystem The Symfony filesystem
      */
     public function __construct(?Filesystem $filesystem = null)
     {
@@ -36,9 +27,9 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function mkdir($dirs, int $mode = 0775): void
+    public function mkdir(string|iterable $dirs, int $mode = 0775): void
     {
         try {
             $this->filesystem->mkdir($dirs, $mode);
@@ -50,10 +41,13 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function touch($files, ?int $time = null, ?int $atime = null): void
-    {
+    public function touch(
+        string|iterable $files,
+        ?int $time = null,
+        ?int $atime = null
+    ): void {
         try {
             $this->filesystem->touch($files, $time, $atime);
         } catch (IOException $e) {
@@ -64,10 +58,13 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function rename(string $origin, string $target, bool $override = false): void
-    {
+    public function rename(
+        string $origin,
+        string $target,
+        bool $override = false
+    ): void {
         try {
             $this->filesystem->rename($origin, $target, $override);
         } catch (IOException $e) {
@@ -78,10 +75,13 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function symlink(string $origin, string $target, bool $copyOnWindows = false): void
-    {
+    public function symlink(
+        string $origin,
+        string $target,
+        bool $copyOnWindows = false
+    ): void {
         try {
             $this->filesystem->symlink($origin, $target, $copyOnWindows);
         } catch (IOException $e) {
@@ -92,13 +92,17 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function copy(string $originFile, string $targetFile, bool $override = false): void
-    {
+    public function copy(
+        string $originFile,
+        string $targetFile,
+        bool $override = false
+    ): void {
         if (stream_is_local($originFile) && !is_file($originFile)) {
             throw FileNotFoundException::fromPath($originFile);
         }
+
         try {
             $this->filesystem->copy($originFile, $targetFile, $override);
         } catch (IOException $e) {
@@ -109,7 +113,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function mirror(
         string $originDir,
@@ -118,8 +122,13 @@ class SymfonyFilesystem implements FilesystemInterface
         bool $delete = false,
         bool $copyOnWindows = false
     ): void {
+        $options = [
+            'override'        => $override,
+            'delete'          => $delete,
+            'copy_on_windows' => $copyOnWindows
+        ];
+
         try {
-            $options = ['override' => $override, 'delete' => $delete, 'copy_on_windows' => $copyOnWindows];
             $this->filesystem->mirror($originDir, $targetDir, null, $options);
         } catch (IOException $e) {
             throw new FilesystemException($e->getMessage(), $e->getPath(), $e);
@@ -129,17 +138,17 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function exists($paths): bool
+    public function exists(string|iterable $paths): bool
     {
         return $this->filesystem->exists($paths);
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function remove($paths): void
+    public function remove(string|iterable $paths): void
     {
         try {
             $this->filesystem->remove($paths);
@@ -151,7 +160,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function get(string $path): string
     {
@@ -170,25 +179,10 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function put(string $path, string $content): void
     {
-        // if path is a stream [scheme://path], use file_put_contents
-        // as Symfony Filesystem method will not work with streams
-        if (preg_match('/\A[^:\/?#]+:\/\/.*\z/', $path)) {
-            $dir = dirname($path);
-            if (!is_dir($dir)) {
-                $this->mkdir($dir);
-            }
-            $bytes = @file_put_contents($path, $content);
-            if ($bytes === false) {
-                $message = sprintf('Unable to write content to file: %s', $path);
-                throw new FilesystemException($message, $path);
-            }
-            return;
-        }
-
         try {
             $this->filesystem->dumpFile($path, $content);
         } catch (IOException $e) {
@@ -199,7 +193,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isFile(string $path): bool
     {
@@ -207,7 +201,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isDir(string $path): bool
     {
@@ -215,7 +209,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isLink(string $path): bool
     {
@@ -223,7 +217,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isReadable(string $path): bool
     {
@@ -231,7 +225,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isWritable(string $path): bool
     {
@@ -239,7 +233,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isExecutable(string $path): bool
     {
@@ -247,7 +241,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function isAbsolute(string $path): bool
     {
@@ -255,7 +249,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function lastModified(string $path): int
     {
@@ -265,16 +259,18 @@ class SymfonyFilesystem implements FilesystemInterface
 
         $timestamp = @filemtime($path);
 
+        // @codeCoverageIgnoreStart
         if ($timestamp === false) {
             $message = sprintf('Unable to fetch last modified: %s', $path);
             throw new FilesystemException($message, $path);
         }
+        // @codeCoverageIgnoreEnd
 
         return $timestamp;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function lastAccessed(string $path): int
     {
@@ -284,16 +280,18 @@ class SymfonyFilesystem implements FilesystemInterface
 
         $timestamp = @fileatime($path);
 
+        // @codeCoverageIgnoreStart
         if ($timestamp === false) {
             $message = sprintf('Unable to fetch last accessed: %s', $path);
             throw new FilesystemException($message, $path);
         }
+        // @codeCoverageIgnoreEnd
 
         return $timestamp;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function fileSize(string $path): int
     {
@@ -303,16 +301,18 @@ class SymfonyFilesystem implements FilesystemInterface
 
         $size = @filesize($path);
 
+        // @codeCoverageIgnoreStart
         if ($size === false) {
             $message = sprintf('Unable to fetch file size: %s', $path);
             throw new FilesystemException($message, $path);
         }
+        // @codeCoverageIgnoreEnd
 
         return $size;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function fileName(string $path): string
     {
@@ -320,11 +320,17 @@ class SymfonyFilesystem implements FilesystemInterface
             throw FileNotFoundException::fromPath($path);
         }
 
-        return pathinfo($path, PATHINFO_FILENAME);
+        $parts = pathinfo($path);
+
+        if (isset($parts['extension'])) {
+            return sprintf('%s.%s', $parts['filename'], $parts['extension']);
+        }
+
+        return $parts['filename'];
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function fileExt(string $path): string
     {
@@ -336,7 +342,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function dirName(string $path): string
     {
@@ -348,7 +354,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function baseName(string $path, ?string $suffix = null): string
     {
@@ -364,7 +370,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function fileType(string $path): string
     {
@@ -379,7 +385,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function mimeType(string $path): string
     {
@@ -389,18 +395,20 @@ class SymfonyFilesystem implements FilesystemInterface
 
         $mime = @finfo_file(finfo_open(FILEINFO_MIME_TYPE), $path);
 
+        // @codeCoverageIgnoreStart
         if ($mime === false) {
             $message = sprintf('Unable to fetch mime type: %s', $path);
             throw new FilesystemException($message, $path);
         }
+        // @codeCoverageIgnoreEnd
 
         return $mime;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function getReturn(string $path)
+    public function getReturn(string $path): mixed
     {
         if (!is_file($path)) {
             throw FileNotFoundException::fromPath($path);
@@ -410,7 +418,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function requireOnce(string $path): void
     {
@@ -422,10 +430,14 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function chmod($paths, int $mode, int $umask = 0000, bool $recursive = false): void
-    {
+    public function chmod(
+        $paths,
+        int $mode,
+        int $umask = 0000,
+        bool $recursive = false
+    ): void {
         try {
             $this->filesystem->chmod($paths, $mode, $umask, $recursive);
         } catch (IOException $e) {
@@ -436,7 +448,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function chown($paths, string $user, bool $recursive = false): void
     {
@@ -450,7 +462,7 @@ class SymfonyFilesystem implements FilesystemInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function chgrp($paths, string $group, bool $recursive = false): void
     {

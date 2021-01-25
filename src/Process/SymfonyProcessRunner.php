@@ -1,97 +1,60 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Novuso\Common\Adapter\Process;
 
 use Novuso\Common\Application\Process\Exception\ProcessException;
 use Novuso\Common\Application\Process\Process;
 use Novuso\Common\Application\Process\ProcessErrorBehavior;
-use Novuso\Common\Application\Process\ProcessRunnerInterface;
-use Novuso\System\Collection\Api\QueueInterface;
+use Novuso\Common\Application\Process\ProcessRunner;
 use Novuso\System\Collection\LinkedQueue;
+use Novuso\System\Collection\Type\Queue;
 use Novuso\System\Exception\DomainException;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process as SymfonyProcess;
 use Throwable;
 
 /**
- * SymfonyProcessRunner is a Symfony process runner adapter
- *
- * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
- * @license   http://opensource.org/licenses/MIT The MIT License
- * @author    John Nickell <email@johnnickell.com>
+ * Class SymfonyProcessRunner
  */
-class SymfonyProcessRunner implements ProcessRunnerInterface
+final class SymfonyProcessRunner implements ProcessRunner
 {
-    /**
-     * Logger
-     *
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * Max concurrent processes
-     *
-     * @var int
-     */
-    private $maxConcurrent;
-
-    /**
-     * Delay used for usleep
-     *
-     * @var int
-     */
-    private $delay;
-
-    /**
-     * Process queue
-     *
-     * @var QueueInterface
-     */
-    private $queue;
-
-    /**
-     * Currently running processes
-     *
-     * @var array
-     */
-    private $processes;
-
-    /**
-     * Number of times to retry
-     *
-     * @var int
-     */
-    private $tries;
+    protected Queue $queue;
+    protected array $processes = [];
 
     /**
      * Constructs SymfonyProcessRunner
      *
-     * @param LoggerInterface $logger        The logger service
-     * @param int             $maxConcurrent The max concurrent processes or 0
-     *                                       for no limit
-     * @param int             $delay         The number of microseconds to
-     *                                       delay between process checks
-     * @param int             $tries         The number of times to try a
-     *                                       failed process when error behavior
-     *                                       is set to retry
+     * @param LoggerInterface|null $logger        The logger service
+     * @param int                  $maxConcurrent The max concurrent processes
+     *                                            or 0 for no limit
+     * @param int                  $delay         The number of microseconds to
+     *                                            delay between process checks
+     * @param int                  $tries         The number of times to try a
+     *                                            failed process when error
+     *                                            behavior is set to retry
+     * @param string               $logLevel      The log level
      *
-     * @throws DomainException When delay is not a natural number
+     * @throws DomainException
      */
-    public function __construct(LoggerInterface $logger, int $maxConcurrent = 1, int $delay = 1000, int $tries = 3)
-    {
-        if ($delay < 1) {
-            $message = sprintf('%s expects delay to be a natural number', __METHOD__);
+    public function __construct(
+        protected ?LoggerInterface $logger = null,
+        protected int $maxConcurrent = 1,
+        protected int $delay = 1000,
+        protected int $tries = 3,
+        protected string $logLevel = LogLevel::DEBUG
+    ) {
+        if ($this->delay < 1) {
+            $message = sprintf(
+                '%s expects delay to be a natural number',
+                __METHOD__
+            );
             throw new DomainException($message);
         }
-
-        $this->logger = $logger;
-        $this->maxConcurrent = $maxConcurrent;
-        $this->delay = $delay;
         $this->queue = LinkedQueue::of(Process::class);
-        $this->processes = [];
-        $this->tries = $tries;
     }
 
     /**
@@ -103,7 +66,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function attach(Process $process): void
     {
@@ -111,7 +74,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function clear(): void
     {
@@ -120,7 +83,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function run(?ProcessErrorBehavior $errorBehavior = null): void
     {
@@ -143,15 +106,14 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
     /**
      * Starts a process if possible
      *
-     * @param ProcessErrorBehavior $errorBehavior The process error behavior
-     *
-     * @return void
-     *
      * @throws ProcessException When an error occurs, depending on behavior
      */
     private function init(ProcessErrorBehavior $errorBehavior): void
     {
-        if ($this->maxConcurrent !== 0 && count($this->processes) >= $this->maxConcurrent) {
+        if (
+            $this->maxConcurrent !== 0
+            && count($this->processes) >= $this->maxConcurrent
+        ) {
             return;
         }
 
@@ -160,7 +122,11 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
             $process = $this->queue->dequeue();
             $symfonyProcess = $this->exchangeProcess($process);
 
-            $this->startProcess($symfonyProcess, $process->stdout(), $process->stderr());
+            $this->startProcess(
+                $symfonyProcess,
+                $process->stdout(),
+                $process->stderr()
+            );
 
             $pid = $symfonyProcess->getPid();
             $this->processes[$pid] = [
@@ -179,10 +145,6 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
 
     /**
      * Performs running checks on processes
-     *
-     * @param ProcessErrorBehavior $errorBehavior The process error behavior
-     *
-     * @return void
      *
      * @throws ProcessException When an error occurs, depending on behavior
      */
@@ -218,7 +180,11 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
                         $iteration++;
                         $symfonyProcess = $this->exchangeProcess($original);
 
-                        $this->startProcess($symfonyProcess, $original->stdout(), $original->stderr());
+                        $this->startProcess(
+                            $symfonyProcess,
+                            $original->stdout(),
+                            $original->stderr()
+                        );
 
                         $pid = $symfonyProcess->getPid();
                         $this->processes[$pid] = [
@@ -243,15 +209,12 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
 
     /**
      * Starts a process
-     *
-     * @param SymfonyProcess $process The Symfony process
-     * @param callable|null  $stdout  The STDOUT output callback
-     * @param callable|null  $stderr  The STDERR output callback
-     *
-     * @return void
      */
-    private function startProcess(SymfonyProcess $process, ?callable $stdout = null, ?callable $stderr = null): void
-    {
+    private function startProcess(
+        SymfonyProcess $process,
+        ?callable $stdout = null,
+        ?callable $stderr = null
+    ): void {
         $out = SymfonyProcess::OUT;
         $process->start(function ($type, $data) use ($stdout, $stderr, $out) {
             if ($type === $out) {
@@ -268,14 +231,10 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
 
     /**
      * Creates a Symfony process instance
-     *
-     * @param Process $process The process
-     *
-     * @return SymfonyProcess
      */
     private function exchangeProcess(Process $process): SymfonyProcess
     {
-        $symfonyProcess = new SymfonyProcess(
+        $symfonyProcess = SymfonyProcess::fromShellCommandline(
             $process->command(),
             $process->directory(),
             $process->environment(),
@@ -293,7 +252,7 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
     /**
      * Stops running processes
      *
-     * @return void
+     * @codeCoverageIgnore
      */
     private function stop(): void
     {
@@ -308,62 +267,67 @@ class SymfonyProcessRunner implements ProcessRunnerInterface
 
     /**
      * Logs a process started
-     *
-     * @param SymfonyProcess $process The Symfony process
-     *
-     * @return void
      */
     private function logProcessStarted(SymfonyProcess $process): void
     {
+        if ($this->logger === null) {
+            return;
+        }
+
         $message = sprintf(
-            '[PROCESS]: "%s" started; Working directory: %s',
+            '[Process]: "%s" started; Working directory: %s',
             $process->getCommandLine(),
             $process->getWorkingDirectory()
         );
-        $this->logger->info($message);
+
+        $this->logger->log($this->logLevel, $message);
     }
 
     /**
      * Logs a process restarted
-     *
-     * @param SymfonyProcess $process The Symfony process
-     *
-     * @return void
      */
     private function logProcessRestarted(SymfonyProcess $process): void
     {
+        if ($this->logger === null) {
+            return;
+        }
+
         $message = sprintf(
-            '[PROCESS]: "%s" restarted; Working directory: %s',
+            '[Process]: "%s" restarted; Working directory: %s',
             $process->getCommandLine(),
             $process->getWorkingDirectory()
         );
-        $this->logger->info($message);
+
+        $this->logger->log($this->logLevel, $message);
     }
 
     /**
      * Logs a process failed
-     *
-     * @param SymfonyProcess $process The Symfony process
-     *
-     * @return void
      */
     private function logProcessFailed(SymfonyProcess $process): void
     {
+        if ($this->logger === null) {
+            return;
+        }
+
         $message = sprintf(
-            '[PROCESS]: "%s" failed; Exit code: %s(%s); Working directory: %s',
+            '[Process]: "%s" failed; Exit code: %s(%s); Working directory: %s',
             $process->getCommandLine(),
             $process->getExitCode(),
             $process->getExitCodeText(),
             $process->getWorkingDirectory()
         );
+
         $this->logger->error($message);
+
         if (!$process->isOutputDisabled()) {
             $message = sprintf(
-                'Output: {%s}; Error output: {%s}',
+                '[Process]: Output: {%s}; Error output: {%s}',
                 $process->getOutput(),
                 $process->getErrorOutput()
             );
-            $this->logger->error($message);
+
+            $this->logger->log($this->logLevel, $message);
         }
     }
 }

@@ -1,21 +1,19 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Novuso\Common\Adapter\HttpClient\Guzzle;
 
-use Novuso\Common\Application\HttpClient\Message\UriFactoryInterface;
+use GuzzleHttp\Psr7\Utils;
+use Novuso\Common\Application\HttpClient\Message\UriFactory;
 use Novuso\System\Exception\DomainException;
 use Psr\Http\Message\UriInterface;
 use Throwable;
-use function GuzzleHttp\Psr7\uri_for;
 
 /**
- * GuzzleUriFactory is a Guzzle URI factory
- *
- * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
- * @license   http://opensource.org/licenses/MIT The MIT License
- * @author    John Nickell <email@johnnickell.com>
+ * Class GuzzleUriFactory
  */
-class GuzzleUriFactory implements UriFactoryInterface
+final class GuzzleUriFactory implements UriFactory
 {
     /**
      * {@inheritdoc}
@@ -23,7 +21,7 @@ class GuzzleUriFactory implements UriFactoryInterface
     public function createUri($uri): UriInterface
     {
         try {
-            return uri_for($uri);
+            return Utils::uriFor($uri);
         } catch (Throwable $e) {
             throw new DomainException($e->getMessage(), $e->getCode(), $e);
         }

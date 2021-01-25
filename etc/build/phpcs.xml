@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ruleset name="Coding Standard">
     <description>Coding Standard</description>
-    <rule ref="PSR1" />
-    <rule ref="PSR2" />
-    <rule ref="PSR2">
-        <exclude name="PSR2.Namespaces.UseDeclaration" />
+    <rule ref="PSR12">
+        <!-- TODO: Below sniffs should be included with PHPCS 3.6 -->
+        <exclude name="Generic.WhiteSpace.ScopeIndent.IncorrectExact" />
+        <exclude name="Squiz.Functions.FunctionDeclarationArgumentSpacing.SpacingAfterHint" />
+        <exclude name="Squiz.WhiteSpace.ScopeKeywordSpacing.Incorrect" />
+        <exclude name="PSR12.Operators.OperatorSpacing.NoSpaceBefore" />
+        <exclude name="PSR12.Operators.OperatorSpacing.NoSpaceAfter" />
     </rule>
 </ruleset>

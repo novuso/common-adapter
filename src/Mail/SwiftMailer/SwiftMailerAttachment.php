@@ -1,54 +1,37 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Novuso\Common\Adapter\Mail\SwiftMailer;
 
-use Novuso\Common\Application\Mail\AttachmentInterface;
+use Novuso\Common\Application\Mail\Message\Attachment;
 use Swift_Attachment;
 
 /**
- * SwiftMailerAttachment is a Swift Mailer attachment adapter
- *
- * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
- * @license   http://opensource.org/licenses/MIT The MIT License
- * @author    John Nickell <email@johnnickell.com>
+ * Class SwiftMailerAttachment
  */
-class SwiftMailerAttachment implements AttachmentInterface
+final class SwiftMailerAttachment implements Attachment
 {
-    /**
-     * Attachment
-     *
-     * @var Swift_Attachment
-     */
-    protected $attachment;
-
     /**
      * Constructs SwiftMailerAttachment
      *
-     * @param Swift_Attachment $attachment A Swift_Attachment instance
+     * @internal
      */
-    protected function __construct(Swift_Attachment $attachment)
+    protected function __construct(protected Swift_Attachment $attachment)
     {
-        $this->attachment = $attachment;
     }
 
     /**
-     * Creates instance from a data string
-     *
-     * @param string      $body        The file contents
-     * @param string      $fileName    The file name
-     * @param string      $contentType The content type
-     * @param string|null $embedId     The embed ID
-     *
-     * @return SwiftMailerAttachment
+     * Creates instance from content string
      */
     public static function fromString(
         string $body,
         string $fileName,
         string $contentType,
-        string $embedId = null
-    ): SwiftMailerAttachment {
-        /** @var Swift_Attachment $attachment */
+        ?string $embedId = null
+    ): static {
         $attachment = new Swift_Attachment($body, $fileName, $contentType);
+
         if ($embedId !== null) {
             $attachment->setId($embedId);
             $attachment->setDisposition('inline');
@@ -59,23 +42,16 @@ class SwiftMailerAttachment implements AttachmentInterface
 
     /**
      * Creates instance from a local file path
-     *
-     * @param string      $path        The local path
-     * @param string      $fileName    The file name
-     * @param string      $contentType The content type
-     * @param string|null $embedId     The embed ID
-     *
-     * @return SwiftMailerAttachment
      */
     public static function fromPath(
         string $path,
         string $fileName,
         string $contentType,
-        string $embedId = null
-    ): SwiftMailerAttachment {
-        /** @var Swift_Attachment $attachment */
+        ?string $embedId = null
+    ): static {
         $attachment = Swift_Attachment::fromPath($path, $contentType)
             ->setFilename($fileName);
+
         if ($embedId !== null) {
             $attachment->setId($embedId);
             $attachment->setDisposition('inline');
@@ -85,7 +61,7 @@ class SwiftMailerAttachment implements AttachmentInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getId(): string
     {
@@ -93,15 +69,15 @@ class SwiftMailerAttachment implements AttachmentInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function getBody(): string
+    public function getBody(): mixed
     {
         return $this->attachment->getBody();
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getFileName(): string
     {
@@ -109,7 +85,7 @@ class SwiftMailerAttachment implements AttachmentInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getContentType(): string
     {
@@ -117,7 +93,7 @@ class SwiftMailerAttachment implements AttachmentInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getDisposition(): string
     {
@@ -125,7 +101,7 @@ class SwiftMailerAttachment implements AttachmentInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function embed(): string
     {

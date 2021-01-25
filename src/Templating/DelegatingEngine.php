@@ -1,39 +1,26 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Novuso\Common\Adapter\Templating;
 
 use Novuso\Common\Application\Templating\Exception\DuplicateHelperException;
 use Novuso\Common\Application\Templating\Exception\TemplatingException;
-use Novuso\Common\Application\Templating\TemplateEngineInterface;
-use Novuso\Common\Application\Templating\TemplateHelperInterface;
+use Novuso\Common\Application\Templating\TemplateEngine;
+use Novuso\Common\Application\Templating\TemplateHelper;
 
 /**
- * DelegatingEngine renders templates using a collection of engines
- *
- * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
- * @license   http://opensource.org/licenses/MIT The MIT License
- * @author    John Nickell <email@johnnickell.com>
+ * Class DelegatingEngine
  */
-class DelegatingEngine implements TemplateEngineInterface
+final class DelegatingEngine implements TemplateEngine
 {
-    /**
-     * Template engines
-     *
-     * @var TemplateEngineInterface[]
-     */
-    protected $engines = [];
-
-    /**
-     * Template helpers
-     *
-     * @var array
-     */
-    protected $helpers = [];
+    protected array $engines = [];
+    protected array $helpers = [];
 
     /**
      * Constructs DelegatingEngine
      *
-     * @param TemplateEngineInterface[] $engines A list of TemplateEngineInterface instances
+     * @param TemplateEngine[] $engines A list of TemplateEngine instances
      */
     public function __construct(array $engines = [])
     {
@@ -43,7 +30,7 @@ class DelegatingEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function render(string $template, array $data = []): string
     {
@@ -59,7 +46,7 @@ class DelegatingEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function exists(string $template): bool
     {
@@ -71,7 +58,7 @@ class DelegatingEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function supports(string $template): bool
     {
@@ -85,9 +72,9 @@ class DelegatingEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function addHelper(TemplateHelperInterface $helper): void
+    public function addHelper(TemplateHelper $helper): void
     {
         $name = $helper->getName();
 
@@ -99,9 +86,9 @@ class DelegatingEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function hasHelper(TemplateHelperInterface $helper): bool
+    public function hasHelper(TemplateHelper $helper): bool
     {
         $name = $helper->getName();
 
@@ -114,12 +101,8 @@ class DelegatingEngine implements TemplateEngineInterface
 
     /**
      * Adds a template engine
-     *
-     * @param TemplateEngineInterface $engine A TemplateEngineInterface instance
-     *
-     * @return void
      */
-    public function addEngine(TemplateEngineInterface $engine): void
+    public function addEngine(TemplateEngine $engine): void
     {
         $this->engines[] = $engine;
     }
@@ -127,13 +110,9 @@ class DelegatingEngine implements TemplateEngineInterface
     /**
      * Resolves a template engine for the template
      *
-     * @param string $template The template
-     *
-     * @return TemplateEngineInterface
-     *
      * @throws TemplatingException When the template is not supported
      */
-    public function getEngine(string $template): TemplateEngineInterface
+    protected function getEngine(string $template): TemplateEngine
     {
         foreach ($this->engines as $engine) {
             if ($engine->supports($template)) {
@@ -141,7 +120,10 @@ class DelegatingEngine implements TemplateEngineInterface
             }
         }
 
-        $message = sprintf('No template engines loaded to support template: %s', $template);
-        throw new TemplatingException($message, $template);
+        $message = sprintf(
+            'No template engines loaded to support template: %s',
+            $template
+        );
+        throw new TemplatingException($message);
     }
 }

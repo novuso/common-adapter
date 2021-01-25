@@ -1,101 +1,36 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Novuso\Common\Adapter\Templating;
 
 use Novuso\Common\Application\Templating\Exception\DuplicateHelperException;
 use Novuso\Common\Application\Templating\Exception\TemplateNotFoundException;
 use Novuso\Common\Application\Templating\Exception\TemplatingException;
-use Novuso\Common\Application\Templating\TemplateEngineInterface;
-use Novuso\Common\Application\Templating\TemplateHelperInterface;
+use Novuso\Common\Application\Templating\TemplateEngine;
+use Novuso\Common\Application\Templating\TemplateHelper;
+use Throwable;
 
 /**
- * PhpEngine is a template engine supporting PHP templates
- *
- * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
- * @license   http://opensource.org/licenses/MIT The MIT License
- * @author    John Nickell <email@johnnickell.com>
+ * Class PhpEngine
  */
-class PhpEngine implements TemplateEngineInterface
+final class PhpEngine implements TemplateEngine
 {
-    /**
-     * Template paths
-     *
-     * @var string[]
-     */
-    protected $paths;
-
-    /**
-     * Template helpers
-     *
-     * @var array
-     */
-    protected $helpers = [];
-
-    /**
-     * Template cache
-     *
-     * @var array
-     */
-    protected $cache = [];
-
-    /**
-     * Parent templates
-     *
-     * @var array
-     */
-    protected $parents = [];
-
-    /**
-     * Parent stack
-     *
-     * @var array
-     */
-    protected $stack = [];
-
-    /**
-     * Blocks
-     *
-     * @var array
-     */
-    protected $blocks = [];
-
-    /**
-     * Open blocks
-     *
-     * @var array
-     */
-    protected $openBlocks = [];
-
-    /**
-     * Current key
-     *
-     * @var string
-     */
-    protected $current;
-
-    /**
-     * Current file
-     *
-     * @var string|null
-     */
-    private $evalFile;
-
-    /**
-     * Current data
-     *
-     * @var array
-     */
-    private $evalData;
+    protected array $helpers = [];
+    protected array $cache = [];
+    protected array $parents = [];
+    protected array $stack = [];
+    protected array $blocks = [];
+    protected array $openBlocks = [];
+    protected string $current;
 
     /**
      * Constructs PhpEngine
      *
-     * @param array $paths   A list of template paths
-     * @param array $helpers A list of template helpers
+     * @throws Throwable
      */
-    public function __construct(array $paths, array $helpers = [])
+    public function __construct(protected array $paths, array $helpers = [])
     {
-        $this->paths = $paths;
         foreach ($helpers as $helper) {
             $this->addHelper($helper);
         }
@@ -104,13 +39,9 @@ class PhpEngine implements TemplateEngineInterface
     /**
      * Retrieves a helper
      *
-     * @param string $name The helper name
-     *
-     * @return TemplateHelperInterface
-     *
      * @throws TemplatingException When the helper is not defined
      */
-    public function get(string $name): TemplateHelperInterface
+    public function get(string $name): TemplateHelper
     {
         if (!isset($this->helpers[$name])) {
             $message = sprintf('Template helper "%s" is not defined', $name);
@@ -122,10 +53,6 @@ class PhpEngine implements TemplateEngineInterface
 
     /**
      * Checks if a helper is defined
-     *
-     * @param string $name The helper name
-     *
-     * @return bool
      */
     public function has(string $name): bool
     {
@@ -134,22 +61,19 @@ class PhpEngine implements TemplateEngineInterface
 
     /**
      * Escapes HTML content
-     *
-     * @param string $value The value
-     *
-     * @return string
      */
     public function escape(string $value): string
     {
-        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false);
+        return htmlspecialchars(
+            $value,
+            ENT_QUOTES | ENT_SUBSTITUTE,
+            'UTF-8',
+            false
+        );
     }
 
     /**
      * Extends the current template
-     *
-     * @param string $template The parent template
-     *
-     * @return void
      */
     public function extends(string $template): void
     {
@@ -157,7 +81,7 @@ class PhpEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function render(string $template, array $data = []): string
     {
@@ -168,7 +92,7 @@ class PhpEngine implements TemplateEngineInterface
 
         $content = $this->evaluate($file, $data);
 
-        if ($this->parents[$key]) {
+        if (is_string($this->parents[$key])) {
             $content = $this->render($this->parents[$key], $data);
         }
 
@@ -177,10 +101,6 @@ class PhpEngine implements TemplateEngineInterface
 
     /**
      * Starts a block
-     *
-     * @param string $name The block name
-     *
-     * @return void
      *
      * @throws TemplatingException When the block is already started
      */
@@ -197,13 +117,11 @@ class PhpEngine implements TemplateEngineInterface
         }
 
         ob_start();
-        ob_implicit_flush(0);
+        ob_implicit_flush(false);
     }
 
     /**
      * Ends a block
-     *
-     * @return void
      *
      * @throws TemplatingException When there is no block started
      */
@@ -226,10 +144,6 @@ class PhpEngine implements TemplateEngineInterface
 
     /**
      * Checks if a block exists
-     *
-     * @param string $name The block name
-     *
-     * @return bool
      */
     public function hasBlock(string $name): bool
     {
@@ -238,11 +152,6 @@ class PhpEngine implements TemplateEngineInterface
 
     /**
      * Sets block content
-     *
-     * @param string $name    The block name
-     * @param string $content The block content
-     *
-     * @return void
      */
     public function setContent(string $name, string $content): void
     {
@@ -251,11 +160,6 @@ class PhpEngine implements TemplateEngineInterface
 
     /**
      * Retrieves block content
-     *
-     * @param string      $name    The block name
-     * @param string|null $default The default content
-     *
-     * @return string|null
      */
     public function getContent(string $name, ?string $default = null): ?string
     {
@@ -267,7 +171,7 @@ class PhpEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function exists(string $template): bool
     {
@@ -283,7 +187,7 @@ class PhpEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function supports(string $template): bool
     {
@@ -291,9 +195,9 @@ class PhpEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function addHelper(TemplateHelperInterface $helper): void
+    public function addHelper(TemplateHelper $helper): void
     {
         $name = $helper->getName();
 
@@ -305,9 +209,9 @@ class PhpEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function hasHelper(TemplateHelperInterface $helper): bool
+    public function hasHelper(TemplateHelper $helper): bool
     {
         $name = $helper->getName();
 
@@ -321,40 +225,30 @@ class PhpEngine implements TemplateEngineInterface
     /**
      * Evaluates a PHP template
      *
-     * @param string $file Template file path
-     * @param array  $data Template data
-     *
-     * @return string
-     *
      * @throws TemplatingException When data is not valid
      */
     protected function evaluate(string $file, array $data = []): string
     {
-        $this->evalFile = $file;
-        $this->evalData = $data;
+        $evalFile = $file;
+        $evalData = $data;
         unset($file, $data);
 
-        if (isset($this->evalData['this'])) {
+        if (isset($evalData['this'])) {
             throw new TemplatingException('Invalid data key: this');
         }
 
-        extract($this->evalData, EXTR_SKIP);
-        $this->evalData = null;
+        extract($evalData, EXTR_SKIP);
+        $evalData = null;
 
         ob_start();
-        require $this->evalFile;
-        $this->evalFile = null;
+        require $evalFile;
+        $evalFile = null;
 
         return ob_get_clean();
     }
 
     /**
      * Outputs a block
-     *
-     * @param string      $name    The block name
-     * @param string|null $default The default content
-     *
-     * @return bool
      */
     public function outputContent(string $name, ?string $default = null): bool
     {
@@ -376,9 +270,7 @@ class PhpEngine implements TemplateEngineInterface
     /**
      * Loads the given template
      *
-     * @param string $template The template
-     *
-     * @return string
+     * @throws TemplateNotFoundException
      */
     protected function loadTemplate(string $template): string
     {
@@ -392,10 +284,6 @@ class PhpEngine implements TemplateEngineInterface
 
     /**
      * Retrieves the absolute path to the template
-     *
-     * @param string $template The template
-     *
-     * @return string
      *
      * @throws TemplateNotFoundException When the template is not found
      */

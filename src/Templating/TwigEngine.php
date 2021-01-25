@@ -1,49 +1,32 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Novuso\Common\Adapter\Templating;
 
 use Novuso\Common\Application\Templating\Exception\DuplicateHelperException;
 use Novuso\Common\Application\Templating\Exception\TemplatingException;
-use Novuso\Common\Application\Templating\TemplateEngineInterface;
-use Novuso\Common\Application\Templating\TemplateHelperInterface;
+use Novuso\Common\Application\Templating\TemplateEngine;
+use Novuso\Common\Application\Templating\TemplateHelper;
 use Throwable;
-use Twig_Environment;
+use Twig\Environment;
 
 /**
- * TwigEngine is a Twig template engine adapter
- *
- * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
- * @license   http://opensource.org/licenses/MIT The MIT License
- * @author    John Nickell <email@johnnickell.com>
+ * Class TwigEngine
  */
-class TwigEngine implements TemplateEngineInterface
+final class TwigEngine implements TemplateEngine
 {
-    /**
-     * Twig environment
-     *
-     * @var Twig_Environment
-     */
-    protected $environment;
+    protected array $helpers = [];
 
     /**
-     * Template helpers
-     *
-     * @var array
+     * Constructs TwigEngine
      */
-    protected $helpers = [];
-
-    /**
-     * TwigEngine constructor.
-     *
-     * @param Twig_Environment $environment The Twig environment
-     */
-    public function __construct(Twig_Environment $environment)
+    public function __construct(protected Environment $environment)
     {
-        $this->environment = $environment;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function render(string $template, array $data = []): string
     {
@@ -55,7 +38,7 @@ class TwigEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function exists(string $template): bool
     {
@@ -63,7 +46,7 @@ class TwigEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function supports(string $template): bool
     {
@@ -71,9 +54,9 @@ class TwigEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function addHelper(TemplateHelperInterface $helper): void
+    public function addHelper(TemplateHelper $helper): void
     {
         $name = $helper->getName();
 
@@ -86,9 +69,9 @@ class TwigEngine implements TemplateEngineInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function hasHelper(TemplateHelperInterface $helper): bool
+    public function hasHelper(TemplateHelper $helper): bool
     {
         $name = $helper->getName();
 

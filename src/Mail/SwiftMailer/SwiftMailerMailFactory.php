@@ -1,55 +1,63 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Novuso\Common\Adapter\Mail\SwiftMailer;
 
-use Novuso\Common\Application\Mail\AttachmentInterface;
-use Novuso\Common\Application\Mail\MailFactoryInterface;
-use Novuso\Common\Application\Mail\Message;
+use Novuso\Common\Application\Mail\Message\Attachment;
+use Novuso\Common\Application\Mail\Message\MailFactory;
+use Novuso\Common\Application\Mail\Message\MailMessage;
 use Swift_Attachment;
 
 /**
- * SwiftMailerMailFactory is a Swift Mailer mail factory
- *
- * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
- * @license   http://opensource.org/licenses/MIT The MIT License
- * @author    John Nickell <email@johnnickell.com>
+ * Class SwiftMailerMailFactory
  */
-class SwiftMailerMailFactory implements MailFactoryInterface
+final class SwiftMailerMailFactory implements MailFactory
 {
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function createMessage(): Message
+    public function createMessage(): MailMessage
     {
-        return new Message();
+        return MailMessage::create();
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function createAttachmentFromString(
         string $body,
         string $fileName,
         string $contentType,
         ?string $embedId = null
-    ): AttachmentInterface {
-        return SwiftMailerAttachment::fromString($body, $fileName, $contentType, $embedId);
+    ): Attachment {
+        return SwiftMailerAttachment::fromString(
+            $body,
+            $fileName,
+            $contentType,
+            $embedId
+        );
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function createAttachmentFromPath(
         string $path,
         string $fileName,
         string $contentType,
         ?string $embedId = null
-    ): AttachmentInterface {
-        return SwiftMailerAttachment::fromPath($path, $fileName, $contentType, $embedId);
+    ): Attachment {
+        return SwiftMailerAttachment::fromPath(
+            $path,
+            $fileName,
+            $contentType,
+            $embedId
+        );
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function generateEmbedId(): string
     {

@@ -1,18 +1,4 @@
 # Novuso Common Adapter
 
-Common adapters for the Novuso Framework
-
-TODO:
-
-* Configuration loaders
-* EventStore implementations
-* Symfony compiler passes
-  * Event subscribers
-  * Command / Query filters
-  * Command / Query handlers
-* Additional middleware
-  * HMAC authentication
-* Additional message queues
-  * RedisMessageQueue
-  * AmazonSqsMessageQueue
-* Lazy loaded commands
+[![Build Status](https://travis-ci.org/novuso/common-adapter.svg?branch=develop)](https://travis-ci.org/novuso/common-adapter)
+[![License](https://poser.pugx.org/novuso/common-adapter/license)](https://packagist.org/packages/novuso/common-adapter)

@@ -1,42 +1,41 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Novuso\Common\Adapter\HttpClient\Guzzle;
 
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
-use Novuso\Common\Application\HttpClient\Message\MessageFactoryInterface;
+use Novuso\Common\Application\HttpClient\Message\MessageFactory;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
 
 /**
- * GuzzleMessageFactory is a Guzzle HTTP message factory
- *
- * @copyright Copyright (c) 2017, Novuso. <http://novuso.com>
- * @license   http://opensource.org/licenses/MIT The MIT License
- * @author    John Nickell <email@johnnickell.com>
+ * Class GuzzleMessageFactory
  */
-class GuzzleMessageFactory implements MessageFactoryInterface
+final class GuzzleMessageFactory implements MessageFactory
 {
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function createRequest(
         string $method,
-        $uri,
+        string|UriInterface $uri,
         array $headers = [],
-        $body = null,
+        mixed $body = null,
         string $protocol = '1.1'
     ): RequestInterface {
         return new Request($method, $uri, $headers, $body, $protocol);
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function createResponse(
         int $status = 200,
         array $headers = [],
-        $body = null,
+        mixed $body = null,
         string $protocol = '1.1',
         ?string $reason = null
     ): ResponseInterface {
