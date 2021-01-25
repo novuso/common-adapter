@@ -4,13 +4,6 @@
     "license": "MIT",
     "require": {
         "php": ">=8.0",
-        "ext-bcmath": "*",
-        "ext-intl": "*",
-        "ext-json": "*",
-        "ext-pcntl": "*",
-        "ext-pdo": "*",
-        "ext-posix": "*",
-        "ext-sockets": "*",
         "novuso/common": "^2.1",
         "psr/cache": "^1.0"
     },
@@ -75,7 +68,6 @@
         "paragonie/paseto": "Required by the paseto token encoder and decoder",
         "pda/pheanstalk": "Required by the pheanstalk message queue",
         "php-amqplib/php-amqplib": "Required by the amqp message queue",
-        "phpseclib/phpseclib": "Required by the phpseclib file transport",
         "psr/cache": "Required by the psr cache adapter",
         "queue-interop/queue-interop": "Required by the queue-interop adapter",
         "swiftmailer/swiftmailer": "Required by the swiftmailer mail adapter",
@@ -113,6 +105,7 @@
         "platform": {
             "php": "8.0.0",
             "ext-bcmath": "8.0.0",
+            "ext-ftp": "8.0.0",
             "ext-intl": "8.0.0",
             "ext-json": "8.0.0",
             "ext-pcntl": "8.0.0",
