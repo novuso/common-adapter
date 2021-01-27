@@ -11,6 +11,7 @@ use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Hmac\Sha384;
 use Lcobucci\JWT\Signer\Hmac\Sha512;
 use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Token\RegisteredClaims;
 use Novuso\Common\Application\Security\Exception\TokenException;
 use Novuso\Common\Application\Security\TokenEncoder;
 use Novuso\Common\Domain\Value\DateTime\DateTime;
@@ -69,7 +70,35 @@ final class JwtEncoder implements TokenEncoder
                 ->expiresAt($expiresAt);
 
             foreach ($claims as $key => $value) {
-                $builder = $builder->withClaim($key, $value);
+                switch ($key) {
+                    case RegisteredClaims::ISSUER:
+                        $builder = $builder->issuedBy((string) $value);
+                        break;
+                    case RegisteredClaims::SUBJECT:
+                        $builder = $builder->relatedTo((string) $value);
+                        break;
+                    case RegisteredClaims::AUDIENCE:
+                        $builder = $builder->permittedFor((string) $value);
+                        break;
+                    case RegisteredClaims::EXPIRATION_TIME:
+                        break;
+                    case RegisteredClaims::NOT_BEFORE:
+                        $builder = $builder->canOnlyBeUsedAfter(
+                            DateTimeImmutable::createFromFormat('U', (string) $value)
+                        );
+                        break;
+                    case RegisteredClaims::ISSUED_AT:
+                        $builder = $builder->issuedAt(
+                            DateTimeImmutable::createFromFormat('U', (string) $value)
+                        );
+                        break;
+                    case RegisteredClaims::ID:
+                        $builder = $builder->identifiedBy((string) $value);
+                        break;
+                    default:
+                        $builder = $builder->withClaim($key, $value);
+                        break;
+                }
             }
 
             $token = $builder->getToken(
