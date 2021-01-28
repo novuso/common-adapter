@@ -25,7 +25,7 @@ abstract class Command extends BaseCommand
     protected InputInterface $input;
     protected SymfonyStyle $output;
     protected SymfonyStyle $stderr;
-    protected string $name;
+    protected ?string $name = null;
     protected string $description;
 
     private ?ProgressBar $progressBar = null;
