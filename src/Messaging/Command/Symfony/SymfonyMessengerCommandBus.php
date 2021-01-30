@@ -32,8 +32,8 @@ final class SymfonyMessengerCommandBus implements AsynchronousCommandBus
     /**
      * @inheritDoc
      */
-    public function dispatch(CommandMessage $message): void
+    public function dispatch(CommandMessage $commandMessage): void
     {
-        $this->messageBus->dispatch($message);
+        $this->messageBus->dispatch($commandMessage);
     }
 }

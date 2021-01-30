@@ -33,9 +33,9 @@ final class SymfonyMessengerEventDispatcher implements AsynchronousEventDispatch
     /**
      * @inheritDoc
      */
-    public function dispatch(EventMessage $message): void
+    public function dispatch(EventMessage $eventMessage): void
     {
-        $this->messageBus->dispatch($message);
+        $this->messageBus->dispatch($eventMessage);
     }
 
     /**
