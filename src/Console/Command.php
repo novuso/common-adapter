@@ -72,7 +72,6 @@ abstract class Command extends BaseCommand
      */
     public function run(InputInterface $input, OutputInterface $output): int
     {
-        $this->setFormatterStyles($output);
         $this->input = $input;
         $this->output = new SymfonyStyle($input, $output);
 
@@ -425,6 +424,9 @@ abstract class Command extends BaseCommand
         InputInterface $input,
         OutputInterface $output
     ): int {
+        $this->setFormatterStyles($this->output);
+        $this->setFormatterStyles($this->stderr);
+
         return $this->fire();
     }
 
