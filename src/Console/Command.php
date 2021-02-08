@@ -108,7 +108,7 @@ abstract class Command extends BaseCommand
     /**
      * Retrieves option value
      */
-    public function option(?string $key = null): string|array|null
+    public function option(?string $key = null): string|array|bool|null
     {
         if ($key === null) {
             return $this->input->getOptions();
