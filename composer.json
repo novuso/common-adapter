@@ -5,7 +5,7 @@
     "require": {
         "php": ">=8.0",
         "novuso/common": "^2.1",
-        "psr/cache": "^1.0"
+        "psr/cache": "^1.0 | ^2.0 | ^3.0"
     },
     "require-dev": {
         "aws/aws-sdk-php": "^3.133",
@@ -27,7 +27,7 @@
         "pda/pheanstalk": "^4.0",
         "php-amqplib/php-amqplib": "^2.7",
         "phploc/phploc": "^7.0",
-        "phpseclib/phpseclib": "^2.0",
+        "phpseclib/phpseclib": "^2.0.31",
         "phpunit/phpunit": "^9.0",
         "queue-interop/queue-interop": "^0.8",
         "squizlabs/php_codesniffer": "^3.0",
