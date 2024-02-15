@@ -32,7 +32,7 @@ final class DoctrineUnitOfWork implements UnitOfWork
      */
     public function commitTransactional(callable $operation): mixed
     {
-        return $this->entityManager->transactional($operation);
+        return $this->entityManager->wrapInTransaction($operation);
     }
 
     /**
