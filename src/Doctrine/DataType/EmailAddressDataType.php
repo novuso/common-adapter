@@ -6,6 +6,8 @@ namespace Novuso\Common\Adapter\Doctrine\DataType;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\ConversionException;
+use Doctrine\DBAL\Types\Exception\InvalidType;
+use Doctrine\DBAL\Types\Exception\ValueNotConvertible;
 use Doctrine\DBAL\Types\Type;
 use Novuso\Common\Domain\Value\Communication\EmailAddress;
 use Throwable;
@@ -24,7 +26,7 @@ final class EmailAddressDataType extends Type
         array $column,
         AbstractPlatform $platform
     ): string {
-        return $platform->getVarcharTypeDeclarationSQL($column);
+        return $platform->getStringTypeDeclarationSQL($column);
     }
 
     /**
@@ -41,11 +43,7 @@ final class EmailAddressDataType extends Type
         }
 
         if (!($value instanceof EmailAddress)) {
-            throw ConversionException::conversionFailedInvalidType(
-                $value,
-                'string',
-                [EmailAddress::class]
-            );
+            throw InvalidType::new($value, 'string', [EmailAddress::class]);
         }
 
         return $value->toString();
@@ -71,10 +69,7 @@ final class EmailAddressDataType extends Type
         try {
             return EmailAddress::fromString($value);
         } catch (Throwable $e) {
-            throw ConversionException::conversionFailed(
-                $value,
-                static::TYPE_NAME
-            );
+            throw ValueNotConvertible::new($value, EmailAddress::class, $e->getMessage(), $e);
         }
     }
 
@@ -84,13 +79,5 @@ final class EmailAddressDataType extends Type
     public function getName(): string
     {
         return static::TYPE_NAME;
-    }
-
-    /**
-     * Checks if this type requires a SQL comment hint
-     */
-    public function requiresSQLCommentHint(AbstractPlatform $platform): bool
-    {
-        return true;
     }
 }

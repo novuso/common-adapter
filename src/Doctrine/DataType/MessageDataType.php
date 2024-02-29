@@ -6,6 +6,8 @@ namespace Novuso\Common\Adapter\Doctrine\DataType;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\ConversionException;
+use Doctrine\DBAL\Types\Exception\InvalidType;
+use Doctrine\DBAL\Types\Exception\ValueNotConvertible;
 use Doctrine\DBAL\Types\Type;
 use Novuso\Common\Domain\Messaging\Message;
 use Novuso\System\Serialization\JsonSerializer;
@@ -46,11 +48,7 @@ final class MessageDataType extends Type
         }
 
         if (!($value instanceof Message)) {
-            throw ConversionException::conversionFailedInvalidType(
-                $value,
-                'string',
-                [Message::class]
-            );
+            throw InvalidType::new($value, 'string', [Message::class]);
         }
 
         $serializer = new JsonSerializer();
@@ -83,10 +81,7 @@ final class MessageDataType extends Type
 
             return $message;
         } catch (Throwable $e) {
-            throw ConversionException::conversionFailed(
-                $value,
-                static::TYPE_NAME
-            );
+            throw ValueNotConvertible::new($value, Message::class, $e->getMessage(), $e);
         }
     }
 
@@ -96,13 +91,5 @@ final class MessageDataType extends Type
     public function getName(): string
     {
         return static::TYPE_NAME;
-    }
-
-    /**
-     * Checks if this type requires a SQL comment hint
-     */
-    public function requiresSQLCommentHint(AbstractPlatform $platform): bool
-    {
-        return true;
     }
 }

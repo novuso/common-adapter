@@ -6,6 +6,8 @@ namespace Novuso\Common\Adapter\Doctrine\DataType;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\ConversionException;
+use Doctrine\DBAL\Types\Exception\InvalidType;
+use Doctrine\DBAL\Types\Exception\ValueNotConvertible;
 use Doctrine\DBAL\Types\Type;
 use Novuso\Common\Domain\Value\DateTime\Time;
 use Throwable;
@@ -28,7 +30,7 @@ final class TimeStringDataType extends Type
             $column['length'] = 15;
         }
 
-        return $platform->getVarcharTypeDeclarationSQL($column);
+        return $platform->getStringTypeDeclarationSQL($column);
     }
 
     /**
@@ -45,11 +47,7 @@ final class TimeStringDataType extends Type
         }
 
         if (!($value instanceof Time)) {
-            throw ConversionException::conversionFailedInvalidType(
-                $value,
-                'string',
-                [Time::class]
-            );
+            throw InvalidType::new($value, 'string', [Time::class]);
         }
 
         return $value->toString();
@@ -75,10 +73,7 @@ final class TimeStringDataType extends Type
         try {
             return Time::fromString($value);
         } catch (Throwable $e) {
-            throw ConversionException::conversionFailed(
-                $value,
-                static::TYPE_NAME
-            );
+            throw ValueNotConvertible::new($value, Time::class, $e->getMessage(), $e);
         }
     }
 
@@ -88,13 +83,5 @@ final class TimeStringDataType extends Type
     public function getName(): string
     {
         return static::TYPE_NAME;
-    }
-
-    /**
-     * Checks if this type requires a SQL comment hint
-     */
-    public function requiresSQLCommentHint(AbstractPlatform $platform): bool
-    {
-        return true;
     }
 }

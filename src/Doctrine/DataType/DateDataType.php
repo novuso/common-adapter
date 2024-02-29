@@ -6,6 +6,8 @@ namespace Novuso\Common\Adapter\Doctrine\DataType;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\ConversionException;
+use Doctrine\DBAL\Types\Exception\InvalidType;
+use Doctrine\DBAL\Types\Exception\ValueNotConvertible;
 use Doctrine\DBAL\Types\Type;
 use Exception;
 use Novuso\Common\Domain\Value\DateTime\Date;
@@ -44,11 +46,7 @@ final class DateDataType extends Type
         }
 
         if (!($value instanceof Date)) {
-            throw ConversionException::conversionFailedInvalidType(
-                $value,
-                'string',
-                [Date::class]
-            );
+            throw InvalidType::new($value, 'string', [Date::class]);
         }
 
         return $value->toString();
@@ -74,10 +72,7 @@ final class DateDataType extends Type
         try {
             return Date::fromString($value);
         } catch (Throwable $e) {
-            throw ConversionException::conversionFailed(
-                $value,
-                static::TYPE_NAME
-            );
+            throw ValueNotConvertible::new($value, Date::class, $e->getMessage(), $e);
         }
     }
 
@@ -87,13 +82,5 @@ final class DateDataType extends Type
     public function getName(): string
     {
         return static::TYPE_NAME;
-    }
-
-    /**
-     * Checks if this type requires a SQL comment hint
-     */
-    public function requiresSQLCommentHint(AbstractPlatform $platform): bool
-    {
-        return true;
     }
 }

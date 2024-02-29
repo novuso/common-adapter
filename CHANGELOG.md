@@ -10,11 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - UnitOfWork upgraded to work with Doctrine ORM v3.0
+- DataType classes upgraded to work with Doctrine ORM v3.0
 
 ### Removed
 
 - Removed support for SwiftMailer
 - Recommended switch to Symfony Mailer Component, which is supported
+- Removed `DoctrineSqlLogger`
 
 ## [2.0.0] - 2022-03-11
 

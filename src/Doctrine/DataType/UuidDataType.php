@@ -6,6 +6,8 @@ namespace Novuso\Common\Adapter\Doctrine\DataType;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\ConversionException;
+use Doctrine\DBAL\Types\Exception\InvalidType;
+use Doctrine\DBAL\Types\Exception\ValueNotConvertible;
 use Doctrine\DBAL\Types\Type;
 use Novuso\Common\Domain\Value\Identifier\Uuid;
 use Throwable;
@@ -41,11 +43,7 @@ final class UuidDataType extends Type
         }
 
         if (!($value instanceof Uuid)) {
-            throw ConversionException::conversionFailedInvalidType(
-                $value,
-                'string',
-                [Uuid::class]
-            );
+            throw InvalidType::new($value, 'string', [Uuid::class]);
         }
 
         return $value->toString();
@@ -71,10 +69,7 @@ final class UuidDataType extends Type
         try {
             return Uuid::fromString($value);
         } catch (Throwable $e) {
-            throw ConversionException::conversionFailed(
-                $value,
-                static::TYPE_NAME
-            );
+            throw ValueNotConvertible::new($value, Uuid::class, $e->getMessage(), $e);
         }
     }
 
@@ -84,13 +79,5 @@ final class UuidDataType extends Type
     public function getName(): string
     {
         return static::TYPE_NAME;
-    }
-
-    /**
-     * Checks if this type requires a SQL comment hint
-     */
-    public function requiresSQLCommentHint(AbstractPlatform $platform): bool
-    {
-        return true;
     }
 }
